@@ -1,0 +1,4 @@
+Erro: linha 16:1 extraneous input 'until' expecting
+Erro: linha 16:11 no viable alternative at input 'cont=='
+Erro: linha 22:0 mismatched input '<EOF>' expecting
+Fim da analise. Com erros sintaticos.
