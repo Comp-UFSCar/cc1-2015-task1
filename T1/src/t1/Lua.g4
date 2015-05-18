@@ -7,73 +7,19 @@
 
 grammar Lua;
 
-//Comeco o Analizador Lexico
-
-//Palavras reservadas (todas as da linguagem LUA)
-PALAVRA_CHAVE
-    : 'and' | 'break' | 'do' | 'else' | 'elseif' |
-      'end' | 'false' | 'for' | 'function' | 'if' |
-      'in' | 'local' | 'nil' | 'not' | 'or' |
-      'repeat' | 'return' | 'then' | 'true' | 'until' | 'while'; 
+@members {
+    public static String grupo = "344443_e_407976" ;
+}
 
 /*
-    Constantes numericas 
-    Apenas decimais, sem sinal, com digitos antes e depois do ponto decimal 
-        opcionais
- */ 
-NUMERO
-    : ('0'..'9')+ ('.'('0'..'9')+)? ;
-
-// Nomes
-NOME
-    : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9')* ;
-
-/* 
-    Cadeias de Caracteres 
-    Apenas as versoes curtas, sem sequencia de escape ('\n'), 
-        e nao sao permitidas quebras de linha.
- */
-
-CADEIA
-    : '\'' (~('\''|'\\'))* '\'' ;
-
-// Comentario e white spaces sao ignorados com o uso de skip()
-COMENTARIO  : '--' .*? '\n' {skip();};
-WS : ( ' '| '\t'| '\r'| '\n') {skip();} ;
-
-// Todos os simbolos suportados pelo analisador lexico
-OP_REL 
-    : '>' | '>=' | '<' | '<=' | '~=' | '=' | '==';
-OP_ARIT_BINARIO 
-    : '+' | '*' | '/' | '%' | '^' | '­' ;
-OP_LOGICOS
-    : 'and' | 'or' | 'not';
-CONCATENACAO
-    : '..';
-COMPRIMENTO
-    : '#';
-VARAG
-    : '...' ;
-ABREPAR
-    : '(' ;
-FECHAPAR
-    : ')' ;
-ABRECHAV
-    :'{';
-FECHACHAV
-    :'}';
-ABRECOLC
-    :'[';
-FECHACOLC
-    :']';
-// Fim de todos os símbolos suportados pelo analizador lexico
-
-// Fim do analizador Lexico
-
-
-//Analisador Sintatico
+    -------------------------------------------------------------------------
+        Analisador Sintatico / Parser
+    -------------------------------------------------------------------------
+*/
 programa : trecho;
+
 bloco : trecho;
+
 trecho : (comando (';')?)* (ultimocomando (';')?)? ;
 
 comando :
@@ -83,7 +29,7 @@ comando :
             'while' exp 'do' bloco 'end' |
             'repeat' bloco 'until' exp |
             'if' exp 'then' bloco ('elseif' exp 'then' bloco)* ('else' bloco)? 'end' |
-//  - insercao da variavel 'i' de um 'for'
+            //  - insercao da variavel 'i' de um 'for'
             'for' NOME {TabelaDeSimbolos.adicionarSimbolo($NOME.text, Tipo.VARIAVEL);} '=' exp ',' exp (',' exp)? 'do' bloco 'end' |
             'for' listadenomes 'in' listaexp 'do' bloco 'end' |
             'function' nomedafuncao { TabelaDeSimbolos.adicionarSimbolo($nomedafuncao.text, Tipo.FUNCAO);} corpodafuncao |
@@ -98,6 +44,7 @@ ultimocomando
     - Acumula o nome da classe, '.' e o nome do metodo
     - Para os dois acima: se o acumulado for do tipo 'class.method', eh entao inserido na tabela
 */
+
 nomedafuncao 
     : NOME {String a = $NOME.text;} ('.' NOME {a = a +"."+$NOME.text ;})* (':' NOME )? {TabelaDeSimbolos.adicionarSimbolo(a,Tipo.FUNCAO); };
 
@@ -158,3 +105,68 @@ separadordecampos : ',' | ';';
 opbin : '+' | '-' | '*' | '/' | '^' | '%' | '..' | '<' | '<=' | '>' | '>=' | '==' | '~=' | 'and' | 'or';
 
 opunaria : '-' | 'not' | '#';
+
+
+/*
+    -------------------------------------------------------------------------
+        Analisador Lexico / Lexer
+    -------------------------------------------------------------------------
+*/
+//Palavras reservadas (todas as da linguagem LUA)
+PALAVRA_CHAVE
+    : 'and' | 'break' | 'do' | 'else' | 'elseif' |
+      'end' | 'false' | 'for' | 'function' | 'if' |
+      'in' | 'local' | 'nil' | 'not' | 'or' |
+      'repeat' | 'return' | 'then' | 'true' | 'until' | 'while'; 
+
+/*
+    Constantes numericas 
+    Apenas decimais, sem sinal, com digitos antes e depois do ponto decimal 
+        opcionais
+ */ 
+NUMERO
+    : ('0'..'9')+ ('.'('0'..'9')+)? ;
+
+// Nomes
+NOME
+    : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9')* ;
+
+/* 
+    Cadeias de Caracteres 
+    Apenas as versoes curtas, sem sequencia de escape ('\n'), 
+        e nao sao permitidas quebras de linha.
+ */
+
+CADEIA
+    : '\'' (~('\''|'\\'))* '\'' ;
+
+// Comentario e white spaces sao ignorados com o uso de skip()
+COMENTARIO  : '--' .*? '\n' ->skip;
+WS : ( ' '| '\t'| '\r'| '\n') ->skip;
+
+// Todos os simbolos suportados pelo analisador lexico
+OP_REL 
+    : '>' | '>=' | '<' | '<=' | '~=' | '=' | '==';
+OP_ARIT_BINARIO 
+    : '+' | '*' | '/' | '%' | '^' | '­' ;
+OP_LOGICOS
+    : 'and' | 'or' | 'not';
+CONCATENACAO
+    : '..';
+COMPRIMENTO
+    : '#';
+VARAG
+    : '...' ;
+ABREPAR
+    : '(' ;
+FECHAPAR
+    : ')' ;
+ABRECHAV
+    :'{';
+FECHACHAV
+    :'}';
+ABRECOLC
+    :'[';
+FECHACOLC
+    :']';
+// Fim de todos os símbolos suportados pelo analizador lexico
